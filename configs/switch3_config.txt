@@ -1,0 +1,122 @@
+! Broadcom FASTPATH Switch 3 Configuration Template
+! Network Setup with VLANs and OSPF
+! Date: 2025-10-27
+
+! Basic Configuration
+enable
+configure
+hostname switch3
+ip routing
+exit
+
+! VLAN Configuration
+vlan database
+vlan 10
+vlan name 10 VLAN_10
+vlan 20
+vlan name 20 VLAN_20
+vlan 30
+vlan name 30 VLAN_30
+exit
+
+! SVI Layer 3 Interface Configuration
+configure
+interface vlan 10
+ip address 10.10.10.3 255.255.255.0
+no shutdown
+exit
+
+interface vlan 20
+ip address 10.10.20.3 255.255.255.0
+no shutdown
+exit
+
+interface vlan 30
+ip address 10.10.30.3 255.255.255.0
+no shutdown
+exit
+
+! Access Port Configuration - VLAN 10
+interface 0/1
+switchport mode access
+switchport access vlan 10
+no shutdown
+exit
+
+interface 0/2
+switchport mode access
+switchport access vlan 10
+no shutdown
+exit
+
+interface 0/3
+switchport mode access
+switchport access vlan 10
+no shutdown
+exit
+
+! Access Port Configuration - VLAN 20
+interface 0/4
+switchport mode access
+switchport access vlan 20
+no shutdown
+exit
+
+interface 0/5
+switchport mode access
+switchport access vlan 20
+no shutdown
+exit
+
+interface 0/6
+switchport mode access
+switchport access vlan 20
+no shutdown
+exit
+
+! Access Port Configuration - VLAN 30
+interface 0/7
+switchport mode access
+switchport access vlan 30
+no shutdown
+exit
+
+interface 0/8
+switchport mode access
+switchport access vlan 30
+no shutdown
+exit
+
+! Trunk Port Configuration
+interface 0/23
+switchport mode trunk
+switchport trunk allowed vlan add 10,20,30
+no shutdown
+exit
+
+interface 0/24
+switchport mode trunk
+switchport trunk allowed vlan add 10,20,30
+no shutdown
+exit
+
+! OSPF Configuration
+router ospf 1
+router-id 3.3.3.3
+network 10.10.10.0/24 area 0
+network 10.10.20.0/24 area 0
+network 10.10.30.0/24 area 0
+exit
+
+exit
+
+! Save Configuration
+write memory
+
+! Verification Commands
+! show vlan
+! show ip interface
+! show interfaces trunk
+! show ip ospf
+! show ip ospf neighbor
+! show ip route

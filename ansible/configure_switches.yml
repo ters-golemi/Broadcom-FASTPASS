@@ -1,0 +1,266 @@
+---
+- name: Configure Broadcom FASTPATH Switches with VLANs and OSPF
+  hosts: broadcom_switches
+  gather_facts: no
+  
+  vars:
+    vlans:
+      - vlan_id: 10
+        vlan_name: "VLAN_10"
+        description: "Data VLAN"
+      - vlan_id: 20
+        vlan_name: "VLAN_20"
+        description: "Voice VLAN"
+      - vlan_id: 30
+        vlan_name: "VLAN_30"
+        description: "Management VLAN"
+    
+    ospf_process_id: 1
+    ospf_area: 0
+
+  tasks:
+    - name: Configure hostname
+      broadcom_fastpath_config:
+        lines:
+          - "hostname {{ inventory_hostname }}"
+      tags: basic
+
+    - name: Enable IP routing
+      broadcom_fastpath_config:
+        lines:
+          - "ip routing"
+      tags: basic
+
+    - name: Create VLANs
+      broadcom_fastpath_config:
+        lines:
+          - "vlan database"
+          - "vlan {{ item.vlan_id }}"
+          - "vlan name {{ item.vlan_id }} {{ item.vlan_name }}"
+          - "exit"
+      loop: "{{ vlans }}"
+      tags: vlan
+
+    - name: Configure SVI interfaces and IP addresses for Switch1
+      broadcom_fastpath_config:
+        lines:
+          - "interface vlan {{ item.vlan_id }}"
+          - "ip address {{ item.ip_address }} {{ item.subnet_mask }}"
+          - "no shutdown"
+          - "exit"
+      loop:
+        - { vlan_id: 10, ip_address: "10.10.10.1", subnet_mask: "255.255.255.0" }
+        - { vlan_id: 20, ip_address: "10.10.20.1", subnet_mask: "255.255.255.0" }
+        - { vlan_id: 30, ip_address: "10.10.30.1", subnet_mask: "255.255.255.0" }
+      when: inventory_hostname == 'switch1'
+      tags: svi
+
+    - name: Configure SVI interfaces and IP addresses for Switch2
+      broadcom_fastpath_config:
+        lines:
+          - "interface vlan {{ item.vlan_id }}"
+          - "ip address {{ item.ip_address }} {{ item.subnet_mask }}"
+          - "no shutdown"
+          - "exit"
+      loop:
+        - { vlan_id: 10, ip_address: "10.10.10.2", subnet_mask: "255.255.255.0" }
+        - { vlan_id: 20, ip_address: "10.10.20.2", subnet_mask: "255.255.255.0" }
+        - { vlan_id: 30, ip_address: "10.10.30.2", subnet_mask: "255.255.255.0" }
+      when: inventory_hostname == 'switch2'
+      tags: svi
+
+    - name: Configure SVI interfaces and IP addresses for Switch3
+      broadcom_fastpath_config:
+        lines:
+          - "interface vlan {{ item.vlan_id }}"
+          - "ip address {{ item.ip_address }} {{ item.subnet_mask }}"
+          - "no shutdown"
+          - "exit"
+      loop:
+        - { vlan_id: 10, ip_address: "10.10.10.3", subnet_mask: "255.255.255.0" }
+        - { vlan_id: 20, ip_address: "10.10.20.3", subnet_mask: "255.255.255.0" }
+        - { vlan_id: 30, ip_address: "10.10.30.3", subnet_mask: "255.255.255.0" }
+      when: inventory_hostname == 'switch3'
+      tags: svi
+
+    - name: Enable OSPF routing protocol
+      broadcom_fastpath_config:
+        lines:
+          - "router ospf {{ ospf_process_id }}"
+          - "router-id {{ router_id }}"
+          - "exit"
+      vars:
+        router_id: "{{ '1.1.1.1' if inventory_hostname == 'switch1' else ('2.2.2.2' if inventory_hostname == 'switch2' else '3.3.3.3') }}"
+      tags: ospf
+
+    - name: Configure OSPF network statements
+      broadcom_fastpath_config:
+        lines:
+          - "router ospf {{ ospf_process_id }}"
+          - "network 10.10.10.0/24 area {{ ospf_area }}"
+          - "network 10.10.20.0/24 area {{ ospf_area }}"
+          - "network 10.10.30.0/24 area {{ ospf_area }}"
+          - "exit"
+      tags: ospf
+
+    - name: Configure access ports for VLAN 10 on Switch1
+      broadcom_fastpath_config:
+        lines:
+          - "interface {{ item }}"
+          - "switchport mode access"
+          - "switchport access vlan 10"
+          - "no shutdown"
+          - "exit"
+      loop:
+        - "0/1"
+        - "0/2"
+        - "0/3"
+      when: inventory_hostname == 'switch1'
+      tags: access_ports
+
+    - name: Configure access ports for VLAN 20 on Switch1
+      broadcom_fastpath_config:
+        lines:
+          - "interface {{ item }}"
+          - "switchport mode access"
+          - "switchport access vlan 20"
+          - "no shutdown"
+          - "exit"
+      loop:
+        - "0/4"
+        - "0/5"
+        - "0/6"
+      when: inventory_hostname == 'switch1'
+      tags: access_ports
+
+    - name: Configure access ports for VLAN 30 on Switch1
+      broadcom_fastpath_config:
+        lines:
+          - "interface {{ item }}"
+          - "switchport mode access"
+          - "switchport access vlan 30"
+          - "no shutdown"
+          - "exit"
+      loop:
+        - "0/7"
+        - "0/8"
+      when: inventory_hostname == 'switch1'
+      tags: access_ports
+
+    - name: Configure access ports for VLAN 10 on Switch2
+      broadcom_fastpath_config:
+        lines:
+          - "interface {{ item }}"
+          - "switchport mode access"
+          - "switchport access vlan 10"
+          - "no shutdown"
+          - "exit"
+      loop:
+        - "0/1"
+        - "0/2"
+        - "0/3"
+      when: inventory_hostname == 'switch2'
+      tags: access_ports
+
+    - name: Configure access ports for VLAN 20 on Switch2
+      broadcom_fastpath_config:
+        lines:
+          - "interface {{ item }}"
+          - "switchport mode access"
+          - "switchport access vlan 20"
+          - "no shutdown"
+          - "exit"
+      loop:
+        - "0/4"
+        - "0/5"
+        - "0/6"
+      when: inventory_hostname == 'switch2'
+      tags: access_ports
+
+    - name: Configure access ports for VLAN 30 on Switch2
+      broadcom_fastpath_config:
+        lines:
+          - "interface {{ item }}"
+          - "switchport mode access"
+          - "switchport access vlan 30"
+          - "no shutdown"
+          - "exit"
+      loop:
+        - "0/7"
+        - "0/8"
+      when: inventory_hostname == 'switch2'
+      tags: access_ports
+
+    - name: Configure access ports for VLAN 10 on Switch3
+      broadcom_fastpath_config:
+        lines:
+          - "interface {{ item }}"
+          - "switchport mode access"
+          - "switchport access vlan 10"
+          - "no shutdown"
+          - "exit"
+      loop:
+        - "0/1"
+        - "0/2"
+        - "0/3"
+      when: inventory_hostname == 'switch3'
+      tags: access_ports
+
+    - name: Configure access ports for VLAN 20 on Switch3
+      broadcom_fastpath_config:
+        lines:
+          - "interface {{ item }}"
+          - "switchport mode access"
+          - "switchport access vlan 20"
+          - "no shutdown"
+          - "exit"
+      loop:
+        - "0/4"
+        - "0/5"
+        - "0/6"
+      when: inventory_hostname == 'switch3'
+      tags: access_ports
+
+    - name: Configure access ports for VLAN 30 on Switch3
+      broadcom_fastpath_config:
+        lines:
+          - "interface {{ item }}"
+          - "switchport mode access"
+          - "switchport access vlan 30"
+          - "no shutdown"
+          - "exit"
+      loop:
+        - "0/7"
+        - "0/8"
+      when: inventory_hostname == 'switch3'
+      tags: access_ports
+
+    - name: Configure trunk ports for inter-switch connectivity
+      broadcom_fastpath_config:
+        lines:
+          - "interface {{ item }}"
+          - "switchport mode trunk"
+          - "switchport trunk allowed vlan add 10,20,30"
+          - "no shutdown"
+          - "exit"
+      loop: "{{ trunk_ports }}"
+      vars:
+        trunk_ports: "{{ trunk_interfaces[inventory_hostname] }}"
+      tags: trunk_ports
+
+    - name: Save configuration
+      broadcom_fastpath_config:
+        save_when: always
+      tags: save
+
+  vars:
+    trunk_interfaces:
+      switch1:
+        - "0/23"
+        - "0/24"
+      switch2:
+        - "0/23"
+        - "0/24"
+      switch3:
+        - "0/23"
+        - "0/24"
