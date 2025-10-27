@@ -26,9 +26,12 @@ This project provides everything needed to configure a three-switch network with
 │   ├── switch1_config.txt        # Switch 1 commands
 │   ├── switch2_config.txt        # Switch 2 commands
 │   └── switch3_config.txt        # Switch 3 commands
-└── docs/                          # Documentation
-    ├── SETUP_GUIDE.md            # Detailed step-by-step guide
-    └── NETWORK_TOPOLOGY.md       # Network topology documentation
+├── docs/                          # Documentation
+│   ├── SETUP_GUIDE.md            # Detailed step-by-step guide
+│   ├── NETWORK_TOPOLOGY.md       # Network topology documentation
+│   └── QUICK_REFERENCE.md        # Quick reference guide
+└── scripts/                       # Utility scripts
+    └── verify_config.sh          # Configuration verification script
 ```
 
 ## Quick Start
@@ -103,6 +106,7 @@ Switch 2            Switch 3
 
 ## Documentation
 
+- **[Quick Reference](docs/QUICK_REFERENCE.md)**: Quick reference guide for common tasks
 - **[Setup Guide](docs/SETUP_GUIDE.md)**: Comprehensive step-by-step configuration guide
 - **[Network Topology](docs/NETWORK_TOPOLOGY.md)**: Detailed network topology and design
 - **[Ansible README](ansible/README.md)**: Ansible automation usage guide
@@ -144,6 +148,13 @@ Detailed usage instructions are available in the documentation:
 
 After configuration, verify the setup:
 
+### Using the Verification Script
+```bash
+# Run the automated verification script
+./scripts/verify_config.sh
+```
+
+### Manual Verification Commands
 ```bash
 # On each switch
 show vlan
